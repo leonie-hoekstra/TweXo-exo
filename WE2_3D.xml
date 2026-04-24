@@ -1,0 +1,277 @@
+<mujoco model="WE2 model">
+    <compiler angle="radian" meshdir="STLS/STL/"/>
+    <size njmax="2000" nconmax="2000"/>
+    <option integrator="Euler" o_solref="0.0004 1" timestep="0.0002"/>
+    <!-- <contact>
+        <pair geom1="footsole_R" geom2="floor" />
+        <pair geom1="footsole_L" geom2="floor" />
+    </contact> -->
+    <!--default>
+        <default class="body">
+            <geom condim="3" friction="3" material="body" rgba=".5 .5 .5 1" solimp=".9 .99 .003"
+                solref=".4 1"
+                type="capsule"/>
+            <joint armature="0" damping="0" limited="true" solimplimit="0 .99 .01" stiffness="0"
+                type="hinge"/>
+        </default>
+    </default-->
+    <asset>
+        <mesh name="BaseV2" file="BaseV2.stl"/>
+        <mesh name="HipAA_RV2" file="HipAA_RV2.stl"/>
+        <mesh name="HipFE_R" file="HipFE_R.stl"/>
+        <mesh name="KneeFE_R" file="KneeFE_R.stl"/>
+        <mesh name="AnkleFE_R" file="AnkleFE_R.stl"/>
+        <mesh name="AnkleAA_R" file="AnkleAA_R.stl"/>
+        <mesh name="HipAA_LV2" file="HipAA_LV2.stl"/>
+        <mesh name="HipFE_L" file="HipFE_L.stl"/>
+        <mesh name="KneeFE_L" file="KneeFE_L.stl"/>
+        <mesh name="AnkleFE_L" file="AnkleFE_L.stl"/>
+        <mesh name="AnkleAA_L" file="AnkleAA_L.stl"/>
+		
+        <texture builtin="gradient" height="512" rgb1=".3 .5 .7" rgb2="0 0 0" type="skybox"
+                width="512"/>
+        <texture builtin="flat" height="1278" mark="cross" markrgb="1 1 1" name="body"
+                random="0.01"
+                rgb1="0.8 0.6 0.4"
+                rgb2="0.8 0.6 0.4"
+                type="cube"
+                width="127"/>
+        <material name="body" rgba="0.8 0.6 .4 1" texture="body" texuniform="true"/>
+        <texture builtin="checker" height="512" name="grid" rgb1=".1 .2 .3" rgb2=".2 .3 .4"
+                type="2d"
+                width="512"/>
+        <material name="grid" reflectance="0.2" texrepeat="1 1" texture="grid" texuniform="true"/>
+    </asset>
+    <visual>
+       	<map force=".1" zfar="30"/>
+       	<rgba haze=".15 .25 .35 1"/>
+       	<quality shadowsize="4096"/>
+       	<global offheight="800" offwidth="800"/>
+    </visual>
+        
+		<worldbody>
+        <geom condim="3" material="grid" name="floor" size="0 0 0.05" type="plane"/>
+		<site type="cylinder" name="CoMProjection" size="0.02 0.001" pos="0 0 0.001" rgba="1 0 0 0.5"/>
+		<site type="cylinder" name="XCoM" size="0.02 0.001" pos="0 0 0.001" rgba="0 1 0 0.5"/>
+		<site type="sphere" name="WholeBodyCoM" size="0.02" pos="0 0 1" rgba="1 0 0 0.25"/>
+		<site type="sphere" name="bos_v1" size="0.005" pos = "0.01 0 0" rgba="1 1 1 1"/>
+		<site type="sphere" name="bos_v2" size="0.005" pos = "0.05 0 0" rgba="1 1 1 1"/>
+		<site type="sphere" name="bos_v3" size="0.005" pos = "0.1 0 0" rgba="1 1 1 1"/>
+		<site type="sphere" name="bos_v4" size="0.005" pos = "0.15 0 0" rgba="1 1 1 1"/>
+		<site type="sphere" name="bos_v5" size="0.005" pos = "0.2 0 0" rgba="1 1 1 1"/>
+		<site type="sphere" name="bos_v6" size="0.005" pos = "0.25 0 0" rgba="1 1 1 1"/>
+		<site type="cylinder" name="CoP" size="0.02 0.001" pos="0 0 0.001" rgba="1 1 0 0.5"/>
+        
+        <light cutoff="100" diffuse="1 1 1" mode="targetbodycom" name="spotlight" pos="0 -20 4" specular=".3 .3 .3" target="BasePlate"/>
+		<light mode="fixed" cutoff="900" name="overheadlight" pos="0 0 2" dir="0 0 -1"/>
+        <body name="BasePlate" pos="0 0 1.083530">
+            <inertial pos="-0.057270602602744 0.005299758341922 0.366042803452782" mass="13.490792212350001" fullinertia="0.482126443023855 0.463112450324283 0.050442354591529 0.002117098189414 0.029063024621876 -0.002811812789257"/> 
+            <!-- quat="0.438500454437994 0.201266099881869 -0.001040048442719 0.875904233803703" diaginertia="0.48425 0.462958 0.048473"/> -->
+            <joint name="BaseV2" type="free"/>
+            <!--geom type="mesh" contype="0" conaffinity="0" group="1" mesh="BaseV2" rgba="0.5 0.5 0.5 0.2"/-->
+			<!-- <geom type="mesh" mesh="BaseV2" rgba="0.5 0.5 0.5 0.2" contype="2" conaffinity="2"/> -->
+            <geom type="box" pos="-0.05 0 0.15" size="0.05 0.1 0.15" rgba="0 0 0 1"/>
+            <geom type="box" pos="-0.05 0 0.4" size="0.05 0.15 0.1" rgba="0 0 0 1"/>
+            <site name="IMU" pos="-0.084 -0.0825 0.324" size="0.025" type="sphere" quat="0.707106781186547 0 0 0.707106781186547"/>
+            <!-- axisangle="0 0 1 1.5708"/> -->
+            <site name="BaseOrigin" pos="0 0 0" size="0.025" type="sphere"/>
+            <site name="bws_attach" pos="-0.05 0 0.5" size="0.03" type="sphere" rgba="1 0.5 0 0.7"/>
+            <body name="PelvicAA_R" pos="-0.0345 -0.084 -0.02474" quat="0.500000000000000	0.500000000000000	-0.500000000000000	-0.500000000000000">
+                <inertial pos="0.082578042235349 0.013653397526189 -0.075427644047225" mass="4.353797858320000" fullinertia="0.055239258077622 0.073621847803363 0.028193437582548 0.000079559319856 0.027398457287840 -0.001994403011759"/>
+                 <!-- quat="0.932380007250125 -0.082824966270947 -0.269519158075712 0.226201172571305" diaginertia="0.074178 0.071762 0.011114"/> -->
+                <joint name="HipAA_RV2" pos="0 0 0" axis="0 0 1" limited = "true" range="-0.36 0.36"/>
+                <geom type="mesh" mesh="HipAA_RV2"/>
+                 <!-- contype="2" conaffinity="2"/> -->
+                <body name="UpperLeg_R" pos="0.146 0 -0.24279" quat="0.500059520256777 -0.499940472657058 0.500059520256777 -0.499940472657058">
+                    <inertial pos="0.199846820721562 0.008207906110950 -0.004980116110000" mass="5.18" fullinertia="0.015043823264001 0.118915013737402 0.115425676851460 0.001031089234110 0.012312304052643 0.003063347551360"/>
+                     <!-- quat="0.211833157270343 -0.792639106917478 -0.570629846915115 0.035093268237265" diaginertia="0.12124 0.1146 0.013552"/> -->
+                    <joint name="HipFE_R" pos="0 0 0" axis="0 0 1" limited = "true" range="-0.38 2.44"/>
+                    <geom type="mesh" mesh="HipFE_R"/>
+                     <!-- contype="2" conaffinity="2"/> -->
+                    <body name="LowerLeg_R" pos="0.420000011900000 -0.000000000000000 -0.045500000000000" quat="0.000000000000000 0.999993729267104 0.003541387647616 0.000000000000000">
+                        <inertial pos="0.111514455701414 -0.008556712886134 -0.012080773420000" mass="3.498" fullinertia="0.007914033624747 0.039403277723012 0.038456303630052 -0.001728523931762 -0.002131135585257 0.001727422853298"/>
+                         <!-- quat="0.203889445648087 -0.683113333160580 -0.257030941006538 0.652472500092420" diaginertia="0.040937 0.037152 0.0076846"/> -->
+                        <joint name="KneeFE_R" pos="0 0 0" axis="0 0 1" limited = "true" range="-0.05 1.93"/>
+                        <geom type="mesh" mesh="KneeFE_R"/>
+                         <!-- contype="2" conaffinity="2"/> -->
+                        <body name="AnkleFlex_R" pos="0.433011603600000 0.000000000000000 0.070750000000000" quat="0.999993300587283 0.000000000000000 0.000000000000000 0.003660434475724">
+                            <inertial pos="0.002483559140000 -0.020646780180000 -0.038712229890000" mass="0.19830015239" fullinertia="0.001353384265765 0.000147154618255 0.001236467745393 0.000029553983040 -0.000010610138206 0.000109102047877"/>
+                             <!-- quat="0.033085291866462 -0.017921185613681 -0.741007899582505 -0.670441263142891" diaginertia="0.0013547 0.0012467 0.00013557"/> -->
+                            <joint name="AnkleFE_R" pos="0 0 0" axis="0 0 1" limited = "true" range="-0.61 0.74"/>
+                            <geom type="mesh" mesh="AnkleFE_R"/>
+                             <!-- contype="2" conaffinity="2"/> -->
+                            <body name="AnkleAbd_R" pos="0.015790000000000 0.058340000000000 -0.000000000000000" quat="0.707106781186548 0.707106781186547 0.000000000000000 0.000000000000000">
+                                <inertial mass="0.546900188050000" pos="0.048949206190000 -0.001325474600000 0.123662348280000" fullinertia="0.004727464155967 0.004787867405933 0.000977517979606 0.000016178488021 -0.000023193833752 0.000007681237387"/>
+                                 <!-- quat="0.430154310146629 0.108057326410760 -0.707865489463524 -0.549742969484650" diaginertia="0.0047919 0.0047236 0.00097736"/> -->
+                                <joint name="AnkleAA_R" pos="0 0 0" axis="0 0 1" limited = "true" range="-0.2618 0.2618"/>
+                                <geom type="mesh" group="1" mesh="AnkleAA_R" contype="2" conaffinity="2"/> 
+                                <geom type="box" name="footsole_R" pos="0.0375 0 0.1475" size="0.0375 0.0625 0.1475" rgba="0.75 0.5 0.5 0.1"/>
+                                <body name="RHI_Body" pos="0.075 0.0652 0">
+									<geom type="sphere" name="RHI_Geom" pos="0 0 0" size="0.00001" rgba="0.75 0.5 0.5 0.1" mass="0.00001"/>
+									<site name="RHI_Site" pos="0 0 0" size="0.00001"/>
+								</body>
+								<body name="RTI_Body" pos="0.075 0.0652 0.295">
+									<geom type="sphere" name="RTI_Geom" pos="0 0 0" size="0.00001" rgba="0.75 0.5 0.5 0.1" mass="0.00001"/>
+									<site name="RTI_Site" pos="0 0 0" size="0.00001"/>
+								</body>
+								<body name="RHO_Body" pos="0.075 -0.0652 0">
+									<geom type="sphere" name="RHO_Geom" pos="0 0 0" size="0.00001" rgba="0.75 0.5 0.5 0.1" mass="0.00001"/>
+									<site name="RHO_Site" pos="0 0 0" size="0.00001"/>
+								</body>
+								<body name="RTO_Body" pos="0.075 -0.0652 0.295">
+									<geom type="sphere" name="RTO_Geom" pos="0 0 0" size="0.00001" rgba="0.75 0.5 0.5 0.1" mass="0.00001"/>
+									<site name="RTO_Site" pos="0 0 0" size="0.00001"/>
+								</body>
+								
+								<site name="rightHeel_in" pos="0.075 0.0652 0" size="0.01" type="sphere"/>
+                                <site name="rightToe_in" pos="0.075 0.0652 0.295" size="0.01" type="sphere"/>
+                                <site name="rightHeel_out" pos="0.075 -0.0652 0" size="0.01" type="sphere"/>
+                                <site name="rightToe_out" pos="0.075 -0.0652 0.295" size="0.01" type="sphere"/>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+            <body name="PelvicAA_L" pos="-0.034500000000000 0.084000000000000 -0.024740000000000" quat="0.500000000000000 0.500000000000000 0.500000000000000 0.500000000000000">
+                <inertial mass="4.353797858320000" pos="0.082578042235349 0.013653397526189 0.075427644047225" fullinertia="0.055239258077622 0.073621847803363 0.028193437582548 0.000079559319856 -0.027398457287840 0.001994403011759"/>
+                 <!-- quat="0.264538168271689 0.207873397805627 -0.938845399795492 -0.073331598203259" diaginertia="0.074178 0.071762 0.011114"/> -->
+                <joint name="HipAA_LV2" pos="0 0 0" axis="0 0 1" limited = "true" range="-0.36 0.36"/>
+                <geom type="mesh" mesh="HipAA_LV2"/>
+                 <!-- contype="2" conaffinity="2"/> -->
+                <body name="UpperLeg_L" pos="0.146000000000000 -0.000000000000000 0.242790000000000" quat="0.500059520256777 0.499940472657058 -0.500059520256777 -0.499940472657058">
+                    <inertial mass="5.180000000000000" pos="0.199846820721562 0.008207906110950 0.004980116110000" fullinertia="0.015043823264001 0.118915013737402 0.115425676851460 0.001031089234110 -0.012312304052643 -0.003063347551360"/>
+                     <!-- quat="0.302168555757848 -0.668263913732707 -0.336633802313011 0.590588849077042" diaginertia="0.12124 0.1146 0.013552"/> -->
+                    <joint name="HipFE_L" pos="0 0 0" axis="0 0 1" limited = "true" range="-0.38 2.44"/>
+                    <geom type="mesh" mesh="HipFE_L"/>
+                     <!-- contype="2" conaffinity="2"/> -->
+                    <body name="LowerLeg_L" pos="0.420000011900000 0.000000000000000 0.045500000000000" quat="0.000000000000000 0.999993729267104 0.003541387647616 0.000000000000000">
+                        <inertial mass="3.498000000000000" pos="0.111514455701414 -0.008556712886134 0.012080773420000" fullinertia="0.007914033624747 0.039403277723012 0.038456303630052 -0.001728523931762 0.002131135585257 -0.001727422853298"/>
+                         <!-- quat="0.664359651178933 0.314648273028676 -0.606557473564046 -0.302837826945512" diaginertia="0.040937 0.037152 0.0076846"/> -->
+                        <joint name="KneeFE_L" pos="0 0 0" axis="0 0 1" limited = "true" range="-0.05 1.93"/>
+                        <geom type="mesh" mesh="KneeFE_L"/>
+                         <!-- contype="2" conaffinity="2"/> -->
+                        <body name="AnkleFlex_L" pos="0.433011603600000 0.000000000000000 -0.070750000000000" quat="0.999993300587283 0.000000000000000 0.000000000000000 0.003660434475724">
+                            <inertial mass="0.198300152390000" pos="0.002483559140000 -0.020646780180000 0.038712229890000" fullinertia="0.001353384265765 0.000147154618255 0.001236467745393 0.000029553983040 0.000010610138206 -0.000109102047877"/>
+                             <!-- quat="0.134806656721875 -0.099816249074551 0.985119804557626 0.037454671170665" diaginertia="0.0013547 0.0012467 0.00013557"/> -->
+                            <joint name="AnkleFE_L" pos="0 0 0" axis="0 0 1" limited = "true" range="-0.61 0.74"/>
+                            <geom type="mesh" mesh="AnkleFE_L"/>
+                             <!-- contype="2" conaffinity="2"/> -->
+                            <body name="AnkleAbd_L" pos="0.015790000000000 0.058340000000000 0.000000000000000" quat="0.707106781186548 -0.707106781186547 0.000000000000000 0.000000000000000">
+                                <inertial mass="0.546900188050000" pos="0.048949206190000 -0.001325474600000 -0.123662348280000" fullinertia="0.004727464155967 0.004787867405933 0.000977517979606 0.000016178488021 0.000023193833752 -0.000007681237387"/>
+                                 <!-- quat="0.615115876208847 0.001813549704415 -0.002709907893021 -0.788429975503534" diaginertia="0.0047919 0.0047236 0.00097736"/> -->
+                                <joint name="AnkleAA_L" pos="0 0 0" axis="0 0 1" limited = "true" range="-0.2618 0.2618"/>
+                                <geom type="mesh" group="1" mesh="AnkleAA_L" contype="2" conaffinity="2"/> 
+                                <geom type="box" name="footsole_L" pos="0.0375 0 -0.1475" size="0.0375 0.0625 0.1475" rgba="0.75 0.5 0.5 0.1"/>
+                                <body name="LHI_Body" pos="0.075 0.0652 0">
+									<geom type="sphere" name="LHI_Geom" pos="0 0 0" size="0.001" rgba="0.75 0.5 0.5 0.1" mass="0.00001"/>
+									<site name="LHI_Site" pos="0 0 0" size="0.001"/>
+								</body>
+								<body name="LTI_Body" pos="0.075 0.0652 -0.295">
+									<geom type="sphere" name="LTI_Geom" pos="0 0 0" size="0.00001" rgba="0.75 0.5 0.5 0.1" mass="0.00001"/>
+									<site name="LTI_Site" pos="0 0 0" size="0.00001"/>
+								</body>
+								<body name="LHO_Body" pos="0.075 -0.0652 0">
+									<geom type="sphere" name="LHO_Geom" pos="0 0 0" size="0.00001" rgba="0.75 0.5 0.5 0.1" mass="0.00001"/>
+									<site name="LHO_Site" pos="0 0 0" size="0.00001"/>
+								</body>
+								<body name="LTO_Body" pos="0.075 -0.0652 -0.295">
+									<geom type="sphere" name="LTO_Geom" pos="0 0 0" size="0.00001" rgba="0.75 0.5 0.5 0.1" mass="0.00001"/>
+									<site name="LTO_Site" pos="0 0 0" size="0.00001"/>
+								</body>
+                                <site name="leftHeel_in" pos="0.075 0.0652 0" size="0.01" type="sphere"/>
+                                <site name="leftToe_in" pos="0.075 0.0652 -0.295" size="0.01" type="sphere"/>
+                                <site name="leftHeel_out" pos="0.075 -0.0652 0" size="0.01" type="sphere"/>
+                                <site name="leftToe_out" pos="0.075 -0.0652 -0.295" size="0.01" type="sphere"/>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+        </body>
+    </worldbody>
+	<tendon>
+	<spatial width="0.005" rgba="1 1 1 1" limited="true" range="0 0.33">
+		<site site="bos_v1"/>
+		<site site="bos_v2"/>
+		<site site="bos_v3"/>
+		<site site="bos_v4"/>
+		<site site="bos_v5"/>
+		<site site="bos_v6"/>
+		<site site="bos_v1"/>
+	</spatial>
+	</tendon>
+    <actuator>
+        <motor joint="HipAA_LV2" name="LHA" ctrlrange="-40 40" forcerange="-40 40" ctrllimited="true" forcelimited="true"/>
+        <motor joint="HipFE_L"   name="LHF" ctrlrange="-60 60" forcerange="-60 60" ctrllimited="true" forcelimited="true"/>
+        <motor joint="KneeFE_L"  name="LK"  ctrlrange="-50 50" forcerange="-50 50" ctrllimited="true" forcelimited="true"/>
+        <motor joint="AnkleFE_L" name="LA"  ctrlrange="-30 30" forcerange="-30 30" ctrllimited="true" forcelimited="true"/>
+        <motor joint="HipAA_RV2" name="RHA" ctrlrange="-40 40" forcerange="-40 40" ctrllimited="true" forcelimited="true"/>
+        <motor joint="HipFE_R"   name="RHF" ctrlrange="-60 60" forcerange="-60 60" ctrllimited="true" forcelimited="true"/>
+        <motor joint="KneeFE_R"  name="RK"  ctrlrange="-50 50" forcerange="-50 50" ctrllimited="true" forcelimited="true"/>
+        <motor joint="AnkleFE_R" name="RA"  ctrlrange="-30 30" forcerange="-30 30" ctrllimited="true" forcelimited="true"/>
+    </actuator>
+    <sensor>
+        <framequat name="Base_quat" objname="BaseOrigin" objtype="site"/> <!-- 24 25 26 27 -->
+        <framepos name="Base_pos" objname="BaseOrigin" objtype="site"/> <!-- 28 29 30 -->
+        <jointpos joint="HipAA_LV2" name="LHA_rad"/> <!-- 31 - 40 -->
+        <jointpos joint="HipFE_L" name="LHF_rad"/>
+        <jointpos joint="KneeFE_L" name="LKF_rad"/>
+        <jointpos joint="AnkleFE_L" name="LAF_rad"/>
+        <jointpos joint="AnkleAA_L" name="LAA_rad"/>
+        <jointpos joint="HipAA_RV2" name="RHA_rad"/>
+        <jointpos joint="HipFE_R" name="RHF_rad"/>
+        <jointpos joint="KneeFE_R" name="RKF_rad"/>
+        <jointpos joint="AnkleFE_R" name="RAF_rad"/>
+        <jointpos joint="AnkleAA_R" name="RAA_rad"/>
+        <!--<frameangvel name="Base_avel" objname="BaseOrigin" objtype="site"/>
+        <framelinvel name="Base_lvel" objname="BaseOrigin" objtype="site"/>-->
+        <gyro name="Base_avel" site="BaseOrigin"/> <!-- 41 42 43 -->
+        <velocimeter name="Base_lvel" site="BaseOrigin"/> <!-- 44 45 46 -->
+        <jointvel joint="HipAA_LV2" name="LHA_rad_s"/> <!-- 47 - 56 -->
+        <jointvel joint="HipFE_L" name="LHF_rad_s"/>
+        <jointvel joint="KneeFE_L" name="LKF_rad_s"/>
+        <jointvel joint="AnkleFE_L" name="LAF_rad_s"/>
+        <jointvel joint="AnkleAA_L" name="LAA_rad_s"/>
+        <jointvel joint="HipAA_RV2" name="RHA_rad_s"/>
+        <jointvel joint="HipFE_R" name="RHF_rad_s"/>
+        <jointvel joint="KneeFE_R" name="RKF_rad_s"/>
+        <jointvel joint="AnkleFE_R" name="RAF_rad_s"/>
+        <jointvel joint="AnkleAA_R" name="RAA_rad_s"/>
+        <force name="LHI" site="LHI_Site"/> <!-- 0 1 2 -->
+        <force name="LTI" site="LTI_Site"/> <!-- 3 4 5 -->
+        <force name="LHO" site="LHO_Site"/> <!-- 6 7 8 -->
+        <force name="LTO" site="LTO_Site"/> <!-- 9 10 11 -->
+        <force name="RHI" site="RHI_Site"/> <!-- 12 13 14 -->
+        <force name="RTI" site="RTI_Site"/> <!-- 15 16 17 -->
+        <force name="RHO" site="RHO_Site"/> <!-- 18 19 20 -->
+        <force name="RTO" site="RTO_Site"/> <!-- 21 22 23 -->
+ <!--        <force name="leftHeel_in" site="leftHeel_in"/>
+        <force name="leftToe_in" site="leftToe_in"/>
+        <force name="leftHeel_out" site="leftHeel_out"/>
+        <force name="leftToe_out" site="leftToe_out"/>
+        <force name="rightHeel_in" site="rightHeel_in"/>
+        <force name="rightToe_in" site="rightToe_in"/>
+        <force name="rightHeel_out" site="rightHeel_out"/>
+        <force name="rightToe_out" site="rightToe_out"/> -->
+        <accelerometer name="IMU_acc" site="IMU"/> 
+        <!-- No clear explanation why this sensor gives such a noisy reading while no noise levels have been specified   -->
+        <!-- <framelinacc name="IMU_acc" objname="IMU" objtype="site"/> 57 58 59 -->
+        <gyro name="IMU_gyr" site="IMU"/> <!-- 60 61 62 -->
+        <framequat name="IMU_quat" objname="IMU" objtype="site"/> <!-- 63 64 65 66 -->
+		<!-- <torque name="LHI_torque" site="LHI_Site"/> 67 - 90
+        <torque name="LTI_torque" site="LTI_Site"/> 
+        <torque name="LHO_torque" site="LHO_Site"/> 
+        <torque name="LTO_torque" site="LTO_Site"/> 
+        <torque name="RHI_torque" site="RHI_Site"/> 
+        <torque name="RTI_torque" site="RTI_Site"/> 
+        <torque name="RHO_torque" site="RHO_Site"/> 
+        <torque name="RTO_torque" site="RTO_Site"/>  -->
+    </sensor> 
+    <contact>
+        <pair geom1="floor" geom2="footsole_L"/>
+        <pair geom1="floor" geom2="footsole_R"/>
+    </contact>
+    <keyframe>
+        <key name="standing" qpos="0 0 1.083530 1 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+    </keyframe>
+</mujoco>
