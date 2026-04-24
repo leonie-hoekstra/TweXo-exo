@@ -1,35 +1,29 @@
 # TweXo
 
-MuJoCo simulation of the WE2 lower-limb exoskeleton, controlled with computed-torque
-control (CTC) and a finite-state-machine gait generator.
+A MuJoCo simulation of the WE2 lower-limb exoskeleton.
 
-This repo contains the standalone exoskeleton model. The combined exo + paralyzed
-human (MyoFullBody) integration lives in a separate workspace.
+This is a student project — I'm using it to test control strategies for an
+exoskeleton aimed at people with spinal cord injuries.
 
-## Contents
+## What's in here
 
-| File | Purpose |
-| --- | --- |
-| `WE2_3D.xml` | MJCF description of the WE2 exoskeleton (8 actuated joints, foot-contact sensors, standing keyframe). |
-| `STLS/` | Mesh files referenced by `WE2_3D.xml`. |
-| `view_model.py` | Interactive viewer with CTC inner loop and optional gait FSM. |
-| `gait_fsm.py` | Sagittal gait FSM: STAND -> DS_R -> SWING_R -> DS_L -> SWING_L. |
-| `inspect_model.py` | Print the model's bodies, joints, actuators, sensors. |
-| `add_standing_keyframe.py` | Utility to capture the current pose as the standing keyframe. |
-| `survey_sensors.py` | List the foot-contact sensor layout. |
+- `WE2_3D.xml` — the exoskeleton model (8 motors, foot sensors, a standing pose)
+- `STLS/` — mesh files used by the model
+- `view_model.py` — runs the simulation in MuJoCo's viewer
+- `gait_fsm.py` — a simple state machine that makes the exo walk
+- `inspect_model.py` — prints what's inside the model (joints, motors, etc.)
+- `add_standing_keyframe.py` — saves the current pose as the standing pose
+- `survey_sensors.py` — lists the foot sensors
 
-## Installation
+## Setup
 
-Requires Python 3.11+.
+You need Python 3.11.
 
 ```bash
 pip install -r requirements.txt
 ```
 
-The MuJoCo Python bindings (`mujoco`) ship a self-contained simulator and viewer,
-so no extra system dependencies are needed.
-
-### Conda
+If you use conda:
 
 ```bash
 conda create -n TweXo python=3.11
@@ -37,44 +31,30 @@ conda activate TweXo
 pip install -r requirements.txt
 ```
 
-## Usage
+## Running it
 
-Hold the standing keyframe with CTC:
+Just stand there:
 
 ```bash
 python view_model.py
 ```
 
-Walk with the gait FSM:
+Walk:
 
 ```bash
 python view_model.py --gait=1
 ```
 
-Tune CTC gains:
+Close the viewer window to stop.
 
-```bash
-python view_model.py --kp=400 --kd=30
-```
+## How the control works
 
-Print model structure:
-
-```bash
-python inspect_model.py
-```
-
-## Control
-
-`view_model.py` runs computed-torque control on the 8 exo actuators each step:
-
-    tau = M(q) * qdd_ref + h(q, qd) + Kp * (q_ref - q) + Kd * (qd_ref - qd)
-
-with `M` and `h` extracted from MuJoCo via `mj_fullM` and `mj_rne`. Torques are
-clipped to the per-actuator `ctrlrange` declared in `WE2_3D.xml`.
-
-When `--gait=1`, `q_ref` comes from `GaitFSM.step(dt, foot_force_L, foot_force_R)`
-in `gait_fsm.py`; otherwise the controller holds the standing keyframe pose.
+Each step the controller computes the torques the motors need to make the joints
+follow a target pose. The target is either the standing pose, or — if `--gait=1`
+— a walking trajectory from the FSM in `gait_fsm.py`. The FSM cycles through
+stand → double support → swing right → double support → swing left, using the
+foot sensors to detect heel-strike.
 
 ## License
 
-MIT, see `LICENSE`.
+MIT
