@@ -1,6 +1,5 @@
 # TweXo
 A MuJoCo simulation of the WE2 lower-limb exoskeleton.
-wasssuuup
 
 ## What's in here
 
