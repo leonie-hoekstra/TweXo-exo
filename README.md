@@ -2,8 +2,6 @@
 
 A MuJoCo simulation of the WE2 lower-limb exoskeleton.
 
-This is a student project — I'm using it to test control strategies for an
-exoskeleton aimed at people with spinal cord injuries.
 
 ## What's in here
 
@@ -32,8 +30,6 @@ pip install -r requirements.txt
 ```
 
 ## Running it
-
-Just stand there:
 
 ```bash
 python view_model.py
