@@ -1,14 +1,4 @@
-"""Survey sensors defined in a WE2 MJCF model.
-
-Groups sensors by category (kinematic / inertial / force / other) and shows
-what object each one is attached to, its dimension, and its live reading
-after an mj_forward call at the initial pose.
-
-Usage:
-    python survey_sensors.py             # WE2_3D.xml
-    python survey_sensors.py human       # WE2Human_3D.xml
-    python survey_sensors.py <path.xml>
-"""
+"""List the sensors in the WE2 model with their type, target, and initial reading."""
 import sys
 from pathlib import Path
 
@@ -16,7 +6,7 @@ import mujoco
 import numpy as np
 
 HERE = Path(__file__).parent.resolve()
-MODELS = {"exo": HERE / "WE2_3D.xml", "human": HERE / "WE2Human_3D.xml"}
+MODELS = {"exo": HERE / "WE2_3D.xml"}
 
 OBJ_TYPE = {
     mujoco.mjtObj.mjOBJ_UNKNOWN: "unknown",
@@ -62,7 +52,6 @@ CATEGORY = {
 
 
 def sensor_type_name(t):
-    """Return short MuJoCo sensor-type name from int."""
     try:
         return mujoco.mjtSensor(t).name.replace("mjSENS_", "").lower()
     except ValueError:
@@ -109,7 +98,6 @@ def main():
         print("(none)")
         return
 
-    # Build sensor table
     rows = []
     for i in range(m.nsensor):
         nm_adr = m.name_sensoradr[i]
@@ -124,7 +112,6 @@ def main():
         cat = CATEGORY.get(stype, "other")
         rows.append((i, nm, stype, cat, tgt, dim, vals))
 
-    # Summary by type
     print("\n--- Count by sensor type ---")
     type_counts = {}
     for _, _, st, _, _, _, _ in rows:
@@ -132,7 +119,6 @@ def main():
     for st, c in sorted(type_counts.items(), key=lambda x: -x[1]):
         print(f"  {st:<18} {c}")
 
-    # Summary by category
     print("\n--- Count by category ---")
     cat_counts = {}
     for _, _, _, cat, _, _, _ in rows:
@@ -140,7 +126,6 @@ def main():
     for cat, c in sorted(cat_counts.items(), key=lambda x: -x[1]):
         print(f"  {cat:<12} {c}")
 
-    # Detail table grouped by category
     for cat in ["kinematic", "inertial", "force", "other"]:
         sub = [r for r in rows if r[3] == cat]
         if not sub:

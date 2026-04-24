@@ -1,16 +1,11 @@
-"""Compute a standing-pose keyframe for WE2_3D.xml using actual mesh vertices.
-
-Approach: focus on the geoms in the floor contact pairs (footsole_L, footsole_R).
-Transform every vertex of those meshes into world coordinates and find the
-true lowest z. Shift the base so the lowest vertex sits MARGIN above the floor.
-"""
+"""Compute a standing-pose keyframe by lifting the base until the foot meshes touch the floor."""
 from pathlib import Path
 import numpy as np
 import mujoco
 
 HERE = Path(__file__).parent.resolve()
 MODEL = HERE / "WE2_3D.xml"
-MARGIN = 0.005  # 5 mm gap above floor (room for MuJoCo's contact margin)
+MARGIN = 0.005
 
 CONTACT_GEOMS = {"footsole_L", "footsole_R"}
 
@@ -21,9 +16,7 @@ def geom_name(m, i):
 
 
 def world_min_z(m, d, geom_id):
-    """Return min world-z across all vertices of a mesh geom."""
     if m.geom_type[geom_id] != mujoco.mjtGeom.mjGEOM_MESH:
-        # Non-mesh: use aabb bottom
         center_z = float(d.geom_xpos[geom_id, 2])
         size_z = float(m.geom_size[geom_id, 2])
         return center_z - size_z
@@ -31,7 +24,7 @@ def world_min_z(m, d, geom_id):
     mesh_id = int(m.geom_dataid[geom_id])
     v_adr = int(m.mesh_vertadr[mesh_id])
     v_num = int(m.mesh_vertnum[mesh_id])
-    verts_local = m.mesh_vert[v_adr:v_adr + v_num]  # (N, 3) in mesh local
+    verts_local = m.mesh_vert[v_adr:v_adr + v_num]
 
     pos = np.asarray(d.geom_xpos[geom_id])
     rot = np.asarray(d.geom_xmat[geom_id]).reshape(3, 3)
@@ -45,7 +38,7 @@ def main():
     d = mujoco.MjData(m)
 
     d.qpos[:] = 0.0
-    d.qpos[3] = 1.0  # quaternion w
+    d.qpos[3] = 1.0
     mujoco.mj_forward(m, d)
 
     print("\nFoot geom analysis:")
@@ -67,7 +60,6 @@ def main():
     d.qpos[2] = z_shift
     mujoco.mj_forward(m, d)
 
-    # Verify: re-check both footsoles after shift
     print("\nAfter shift:")
     for i in range(m.ngeom):
         nm = geom_name(m, i)

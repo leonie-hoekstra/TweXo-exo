@@ -1,21 +1,4 @@
-"""Load a WE2 MJCF model and run the interactive MuJoCo viewer.
-
-Applies a Body-Weight-Support (BWS) harness force at the bws_attach site
-on the BasePlate, and a Computed-Torque Controller (CTC) that holds every
-actuated joint at its keyframe-0 position.
-
-Control law per actuated joint (mapped to its dof index):
-    tau = M @ qdd_ref + h(q, qd) + Kp*(q_ref - q) + Kd*(qd_ref - qd)
-where h is the bias (gravity + Coriolis + passive) from mj_rne, and M is
-the full mass matrix from mj_fullM. Output is clipped to actuator limits.
-
-Usage:
-    python view_model.py                       # 50% BWS, CTC on
-    python view_model.py --bws=1.0             # 100% body weight unloaded
-    python view_model.py --bws=0 --ctrl=none   # no harness, no controller
-    python view_model.py --ctrl=pd             # legacy joint-PD
-    python view_model.py --kp=400 --kd=30      # tune CTC feedback gains
-"""
+"""Run the WE2 exoskeleton model in the MuJoCo viewer with CTC and an optional gait FSM."""
 import sys
 import time
 from pathlib import Path
@@ -27,12 +10,12 @@ import numpy as np
 from gait_fsm import GaitFSM
 
 HERE = Path(__file__).parent.resolve()
-MODELS = {"exo": HERE / "WE2_3D.xml", "human": HERE / "WE2Human_3D.xml"}
+MODELS = {"exo": HERE / "WE2_3D.xml"}
 DEFAULT_BWS_PCT = 0.5
-DEFAULT_CTRL = "ctc"      # "ctc" | "pd" | "none"
-DEFAULT_KP = 400.0        # CTC feedback proportional (rad-error -> Nm-equivalent)
-DEFAULT_KD = 30.0         # CTC feedback derivative
-DEFAULT_KP_PD = 150.0     # legacy PD gains
+DEFAULT_CTRL = "ctc"
+DEFAULT_KP = 400.0
+DEFAULT_KD = 30.0
+DEFAULT_KP_PD = 150.0
 DEFAULT_KD_PD = 8.0
 DEFAULT_GAIT_ON = False
 FOOT_SENSORS_L = ("LHI", "LTI", "LHO", "LTO")
@@ -85,7 +68,6 @@ def find_site(model, name):
 
 
 def sensor_addrs(model, names):
-    """Return list of (adr, dim) for the given sensor names; missing -> skipped."""
     out = []
     for nm in names:
         sid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SENSOR, nm)
@@ -95,7 +77,6 @@ def sensor_addrs(model, names):
 
 
 def foot_force_mag(data, addrs):
-    """Sum |force| across given (adr, dim) sensor blocks."""
     total = 0.0
     for adr, dim in addrs:
         v = data.sensordata[adr:adr + dim]
@@ -124,7 +105,6 @@ def main():
         mujoco.mj_resetDataKeyframe(model, data, 0)
         print("  initial state: keyframe 0")
 
-    # Set up BWS harness
     bws_site_id = find_site(model, "bws_attach")
     bws_force = 0.0
     bws_body_id = -1
@@ -139,7 +119,6 @@ def main():
     else:
         print("  BWS harness: site 'bws_attach' not found, disabled")
 
-    # Actuator -> joint mapping (qpos and dof addresses for the driven joint)
     act_qpos_adr = np.array(
         [model.jnt_qposadr[model.actuator_trnid[i, 0]] for i in range(model.nu)],
         dtype=np.int32,
@@ -149,23 +128,20 @@ def main():
         dtype=np.int32,
     )
     target_qpos = data.qpos.copy()
-    qdd_ref = np.zeros(model.nu)  # zero accel reference for posture-hold
+    qdd_ref = np.zeros(model.nu)
 
-    # Pre-allocate buffers reused each control step
     M_full = np.zeros((model.nv, model.nv))
     ctrl_lo = model.actuator_ctrlrange[:, 0].copy()
     ctrl_hi = model.actuator_ctrlrange[:, 1].copy()
     has_ctrl_limits = model.actuator_ctrllimited.astype(bool)
 
     if ctrl == "ctc" and model.nu > 0:
-        print(f"  CTC controller: kp={kp}, kd={kd} on {model.nu} actuators "
-              f"(M*qdd_ref + h + Kp*e + Kd*ed)")
+        print(f"  CTC controller: kp={kp}, kd={kd} on {model.nu} actuators")
     elif ctrl == "pd" and model.nu > 0:
         print(f"  PD controller: kp={kp}, kd={kd} on {model.nu} actuators")
     else:
         print("  Controller: disabled")
 
-    # Gait FSM: posture-hold q_ref from keyframe by default; FSM overrides it.
     q_ref_hold = target_qpos[act_qpos_adr].copy()
     fsm = GaitFSM() if gait_on else None
     foot_L_addrs = sensor_addrs(model, FOOT_SENSORS_L) if gait_on else []
@@ -212,19 +188,14 @@ def main():
                 ed = qd_ref - qd
 
                 if ctrl == "ctc":
-                    # Bias forces h(q,qd) = Coriolis + gravity + passive (full nv vector)
                     mujoco.mj_rne(model, data, 1, data.qfrc_bias)
                     h_act = data.qfrc_bias[act_dof_adr]
-
-                    # Mass matrix row/col block for actuated dofs
                     mujoco.mj_fullM(model, M_full, data.qM)
                     M_act = M_full[np.ix_(act_dof_adr, act_dof_adr)]
-
                     tau = M_act @ qdd_ref + h_act + kp * e + kd * ed
-                else:  # pd
+                else:
                     tau = kp * e + kd * ed
 
-                # Clamp to actuator ctrl limits (gear=1, so ctrl == joint torque [Nm])
                 tau = np.where(has_ctrl_limits, np.clip(tau, ctrl_lo, ctrl_hi), tau)
                 data.ctrl[:] = tau
 

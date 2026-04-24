@@ -1,10 +1,4 @@
-"""Print a sanity-check report for a WE2 MJCF model.
-
-Usage:
-    python inspect_model.py            # WE2_3D.xml
-    python inspect_model.py human      # WE2Human_3D.xml
-    python inspect_model.py <path.xml>
-"""
+"""Print the bodies, joints, actuators and sensors of the WE2 model."""
 import sys
 from pathlib import Path
 
@@ -12,7 +6,7 @@ import mujoco
 import numpy as np
 
 HERE = Path(__file__).parent.resolve()
-MODELS = {"exo": HERE / "WE2_3D.xml", "human": HERE / "WE2Human_3D.xml"}
+MODELS = {"exo": HERE / "WE2_3D.xml"}
 
 JNT_TYPE = {0: "free", 1: "ball", 2: "slide", 3: "hinge"}
 ACT_TRN  = {0: "joint", 1: "jointinparent", 2: "tendon", 3: "site", 4: "body"}
@@ -71,7 +65,7 @@ def main():
 
     section("Actuators")
     if m.nu == 0:
-        print("  (none — model has NO actuators; control panel will be empty)")
+        print("  (none)")
     else:
         print(f"{'idx':>3}  {'name':<16} {'trn':<6} {'target':<14} "
               f"{'ctrl range':<22} {'force range':<22} gear")
@@ -96,7 +90,7 @@ def main():
         mass = float(m.body_mass[i])
         inertia = m.body_inertia[i]
         warn = []
-        if i > 0:  # skip world
+        if i > 0:
             if mass <= 0:
                 warn.append("zero mass")
                 warn_count += 1
@@ -110,7 +104,7 @@ def main():
 
     section("Contacts (predefined pairs / exclusions)")
     if m.npair == 0:
-        print("  (no <pair> entries — collisions rely on contype/conaffinity defaults)")
+        print("  (no <pair> entries)")
     else:
         for i in range(m.npair):
             g1 = name(m, m.name_geomadr[m.pair_geom1[i]])
@@ -133,7 +127,7 @@ def main():
     if m.nkey:
         print(f"  keyframes defined: {m.nkey}")
     else:
-        print("  no <keyframe> defined → model spawns at qpos0 (often midair)")
+        print("  no <keyframe> defined")
 
     print("\nDone.")
 

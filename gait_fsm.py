@@ -1,13 +1,7 @@
-"""Finite-state machine for sagittal gait of the WE2 exoskeleton.
+"""Walking gait FSM for the WE2 exoskeleton.
 
-States: STAND -> DS_R -> SWING_R -> DS_L -> SWING_L -> DS_R -> ...
-  - STAND: hold standing pose until start_after seconds elapsed
-  - DS_*:  brief double-support dwell before the named swing
-  - SWING_R: right leg swings, left in stance; exit on R-foot heel-strike or timeout
-  - SWING_L: mirror of SWING_R
-
-Output: q_ref of length 8 in actuator order
-        [LHA, LHF, LK, LA, RHA, RHF, RK, RA]
+Cycles STAND -> DS_R -> SWING_R -> DS_L -> SWING_L -> DS_R -> ...
+Returns q_ref in actuator order [LHA, LHF, LK, LA, RHA, RHF, RK, RA].
 """
 import numpy as np
 
@@ -18,18 +12,17 @@ STAND, DS_R, SWING_R, DS_L, SWING_L = "STAND", "DS_R", "SWING_R", "DS_L", "SWING
 
 class GaitParams:
     def __init__(self):
-        self.swing_dur = 1.4          # s, slow swing keeps reaction torques low
-        self.ds_dur = 0.40            # s, longer DS for re-stabilization
-        self.hip_flex_amp = 0.25      # rad (~14 deg) modest swing hip flexion
-        self.knee_flex_amp = 0.55     # rad (~32 deg) peak swing knee flexion
-        self.ankle_clearance = 0.05   # rad dorsiflex during swing (toe-clearance)
-        # Stance pose: keep hip at 0 — positive flex on a grounded leg pitches
-        # the pelvis BACKWARD (foot is pinned). 0 is neutral.
+        self.swing_dur = 1.4
+        self.ds_dur = 0.40
+        self.hip_flex_amp = 0.25
+        self.knee_flex_amp = 0.55
+        self.ankle_clearance = 0.05
+        # Hip flexion on a grounded leg tips the pelvis backward, so stance is held neutral.
         self.stance_hip = 0.0
         self.stance_knee = 0.0
         self.stance_ankle = 0.0
-        self.heel_strike_N = 80.0     # |force| threshold for ground contact
-        self.heel_strike_min_s = 0.6  # earliest phase for contact-driven exit
+        self.heel_strike_N = 80.0
+        self.heel_strike_min_s = 0.6
 
 
 class GaitFSM:
@@ -41,7 +34,6 @@ class GaitFSM:
         self.start_after = start_after
 
     def _swing(self, s):
-        # half-sine bell for hip & knee; flat dorsiflex for ankle clearance
         hip = self.p.hip_flex_amp * np.sin(np.pi * s)
         knee = self.p.knee_flex_amp * np.sin(np.pi * s)
         ankle = self.p.ankle_clearance
